@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import re
@@ -24,6 +24,10 @@ class Task(db.Model):
 
 with app.app_context():
     db.create_all()
+
+@app.route('/')
+def home():
+    return redirect('/login.html')
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -81,11 +85,12 @@ def handle_exception(e):
     traceback.print_exc()
     return jsonify({"message":"Internal server error"}), 500
 
-# Static file serving -- add this BEFORE the __main__ block!
+# Static files route, improve to serve files relative to the app folder:
 @app.route('/<path:filename>')
 def serve_static_file(filename):
-    return send_from_directory(os.getcwd(), filename)
+    # Serve files from the directory where the app is located
+    app_root = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(app_root, filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
