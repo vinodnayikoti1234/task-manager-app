@@ -44,13 +44,13 @@
   <h2>Create Your Account</h2>
   <form id="signupForm">
     <label for="username">Username</label>
-    <input type="text" id="username" name="username" required />
+    <input type="text" id="username" required />
 
     <label for="email">Email</label>
-    <input type="email" id="email" name="email" required />
+    <input type="email" id="email" required />
 
     <label for="password">Password</label>
-    <input type="password" id="password" name="password" required />
+    <input type="password" id="password" required />
 
     <button type="submit">Sign Up</button>
   </form>
@@ -65,22 +65,23 @@
         password: document.getElementById('password').value
       };
 
-     fetch("/signup", { ... })   // ✅
+      fetch("/signup", {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
       .then(response => {
         if (response.ok) {
           return response.json();
         } else {
-          return response.json().then(err => {throw err;});
+          return response.json().then(err => { throw err; });
         }
       })
       .then(data => {
         alert(data.message);
+        if (data.message === "Signed up successfully") {
+          window.location.href = "login.html";
+        }
       })
       .catch(error => {
         alert(error.message || 'Signup failed');
@@ -89,4 +90,3 @@
   </script>
 </body>
 </html>
-
