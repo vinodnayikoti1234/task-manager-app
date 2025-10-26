@@ -77,9 +77,8 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert(result.message);
-          // Optionally reset or redirect after success
-          document.getElementById('signupForm').reset();
+          alert(result.message || "Signup successful. Please login.");
+          window.location.href = "login.html";
         } else {
           alert(result.message || 'Signup failed');
         }
@@ -90,4 +89,3 @@
   </script>
 </body>
 </html>
-
