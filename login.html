@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - Task Manager</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2d9c58">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2d9c58" />
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -31,7 +31,8 @@
       font-size: 2rem;
       font-weight: 600;
     }
-    input[type="email"], input[type="password"] {
+    input[type="email"],
+    input[type="password"] {
       width: 85%;
       padding: 12px;
       margin-bottom: 15px;
@@ -42,7 +43,8 @@
       outline: none;
       transition: border-color 0.3s;
     }
-    input[type="email"]:focus, input[type="password"]:focus {
+    input[type="email"]:focus,
+    input[type="password"]:focus {
       border-color: #2d4686;
     }
     button {
@@ -74,41 +76,47 @@
   <div class="login-box">
     <h2>Login</h2>
     <form id="loginForm">
-      <input type="email" id="email" placeholder="Email" required /><br>
-      <input type="password" id="password" placeholder="Password" required /><br>
+      <input type="email" id="email" placeholder="Email" required /><br />
+      <input type="password" id="password" placeholder="Password" required /><br />
       <button type="submit">Login</button>
     </form>
     <a href="signup.html" class="signup-link">New user? Sign up</a>
   </div>
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const email = document.getElementById("email").value;
+
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-     fetch("/login", {  // ✅ This works everywhere!
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ email, password })
-      })
-      .then(response => response.json())
-      .then(data => {
+
+      try {
+        const response = await fetch("http://your-deployed-app-url/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
         alert(data.message);
-        if (data.message.startsWith("Welcome")) {
+
+        if (response.ok && data.message.startsWith("Welcome")) {
           localStorage.setItem("userEmail", email);
           window.location.href = "dashboard.html";
         }
-      })
-      .catch(error => alert("Network error: " + error));
+      } catch (error) {
+        alert("Network error: " + error);
+      }
     });
-  </script>
 
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(() => console.log('Service Worker Registered'))
-      .catch(error => console.error('Service Worker registration failed:', error));
-  }
+    // Service worker registration for PWA support
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((error) =>
+          console.error("Service Worker registration failed:", error)
+        );
+    }
   </script>
 </body>
 </html>
-
