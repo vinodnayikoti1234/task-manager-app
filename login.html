@@ -97,11 +97,14 @@
         });
 
         const data = await response.json();
-        alert(data.message);
 
-        if (response.ok && data.message.startsWith("Welcome")) {
+        if (response.ok) {
           localStorage.setItem("userEmail", email);
+          localStorage.setItem("username", data.username);
+          alert(data.message || "Login successful!");
           window.location.href = "dashboard.html";
+        } else {
+          alert(data.error || "Login failed");
         }
       } catch (error) {
         alert("Network error: " + error);
@@ -120,4 +123,3 @@
   </script>
 </body>
 </html>
-
