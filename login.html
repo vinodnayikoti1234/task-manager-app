@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Task Manager</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2d9c58" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 20px #b0c4de66;
+      padding: 40px 32px;
+      max-width: 370px;
+      width: 100%;
+      text-align: center;
+    }
+    h2 {
+      color: #2d4686;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 85%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+      border: 1px solid #b0c4de;
+      font-size: 16px;
+      background: #f7fafc;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: #2d4686;
+    }
+    button {
+      width: 94%;
+      padding: 12px;
+      background-color: #2d9c58;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 17px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 3px 14px #b0c4de33;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #19793b;
+    }
+    .signup-link {
+      margin-top: 14px;
+      display: block;
+      color: #1a237e;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required /><br />
+      <input type="password" id="password" placeholder="Password" required /><br />
+      <button type="submit">Login</button>
+    </form>
+    <a href="signup.html" class="signup-link">New user? Sign up</a>
+  </div>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("http://your-deployed-app-url/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        alert(data.message);
+
+        if (response.ok && data.message.startsWith("Welcome")) {
+          localStorage.setItem("userEmail", email);
+          window.location.href = "dashboard.html";
+        }
+      } catch (error) {
+        alert("Network error: " + error);
+      }
+    });
+
+    // Service worker registration for PWA support
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((error) =>
+          console.error("Service Worker registration failed:", error)
+        );
+    }
+  </script>
+</body>
+</html>

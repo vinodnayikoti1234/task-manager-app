@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Dashboard - Task Manager</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2d9c58" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333366;
+    }
+    #taskForm {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    input[type="text"] {
+      padding: 8px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 65%;
+      font-size: 18px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 8px 20px;
+      background: #2d9c58;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #005330;
+    }
+    ul {
+      padding: 0;
+      list-style-type: none;
+    }
+    li {
+      background: white;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      background: #b62222;
+      border: none;
+      border-radius: 3px;
+      color: white;
+      padding: 5px 13px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+    .delete-btn:hover {
+      background: #820909;
+    }
+  </style>
+</head>
+<body>
+  <h2>Your Tasks</h2>
+  <form id="taskForm">
+    <input type="text" id="taskInput" placeholder="New task" required />
+    <button type="submit">Add Task</button>
+  </form>
+  <ul id="taskList"></ul>
+
+  <script>
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+      alert("Not logged in!");
+      window.location.href = "login.html";
+    }
+
+    async function fetchTasks() {
+      try {
+        const response = await fetch(`http://your-deployed-app-url/tasks?user_email=${encodeURIComponent(userEmail)}`);
+        const tasks = await response.json();
+        if (!Array.isArray(tasks)) {
+          alert("Error: " + (tasks && tasks.message));
+          return;
+        }
+        const ul = document.getElementById('taskList');
+        ul.innerHTML = '';
+        tasks.forEach(task => {
+          const li = document.createElement('li');
+          li.textContent = task.description;
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.className = 'delete-btn';
+          delBtn.onclick = () => deleteTask(task.id);
+          li.appendChild(delBtn);
+          ul.appendChild(li);
+        });
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
+
+    async function addTask(description) {
+      try {
+        const response = await fetch('http://your-deployed-app-url/tasks', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({description, user_email: userEmail})
+        });
+        if (response.ok) {
+          fetchTasks();
+          document.getElementById('taskInput').value = '';
+        } else {
+          const data = await response.json();
+          alert(data && data.message ? data.message : "Failed to add task");
+        }
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
+
+    async function deleteTask(id) {
+      try {
+        const response = await fetch(`http://your-deployed-app-url/tasks/${id}`, {method: 'DELETE'});
+        if (response.ok) {
+          fetchTasks();
+        } else {
+          alert("Failed to delete task");
+        }
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
+
+    document.getElementById('taskForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const taskInput = document.getElementById('taskInput');
+      if (taskInput.value.trim() === "") {
+        alert("Task cannot be empty.");
+        return;
+      }
+      addTask(taskInput.value.trim());
+    });
+
+    fetchTasks();
+  </script>
+
+  <!-- Service Worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(error => console.error('Service Worker registration failed:', error));
+    }
+  </script>
+</body>
+</html>
