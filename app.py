@@ -7,8 +7,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Use your Supabase connection URI here:
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Whatif$71845@db.kefgveovbmxeoeudzmoe.supabase.co:5432/postgres'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Vinod$81559391@db.kefgveovbmxeoeudzmoe.supabase.co:5432/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -82,7 +81,6 @@ def handle_exception(e):
     traceback.print_exc()
     return jsonify({"message":"Internal server error"}), 500
 
-# Static file serving -- add this BEFORE the __main__ block!
 @app.route('/<path:filename>')
 def serve_static_file(filename):
     return send_from_directory(os.getcwd(), filename)
