@@ -4,151 +4,167 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>User Dashboard - Task Manager</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2d9c58">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2d9c58" />
   <style>
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-    .main-box {
-      background: #fff;
-      margin: 40px 0;
-      padding: 34px 28px 28px 28px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px #b0c4de66;
-      width: 97vw; max-width: 410px;
-      min-height: 400px;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
     }
     h2 {
-      color: #2d4686;
-      font-size: 2rem;
-      font-weight: 600;
       text-align: center;
-      margin-bottom: 18px;
+      color: #333366;
     }
     #taskForm {
-      text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
     }
-    #taskInput {
-      width: 80%;
-      padding: 12px;
+    input[type="text"] {
+      padding: 8px 10px;
       border-radius: 4px;
-      border: 1px solid #b0c4de;
-      background: #f7fafc;
-      font-size: 16px;
-      margin-bottom: 10px;
-      outline: none;
+      border: 1px solid #ccc;
+      width: 65%;
+      font-size: 18px;
+      margin-right: 10px;
     }
     button {
-      padding: 10px 16px;
-      background-color: #2d9c58;
-      color: #fff;
+      padding: 8px 20px;
+      background: #2d9c58;
       border: none;
       border-radius: 4px;
-      font-size: 16px;
-      font-weight: 500;
+      color: white;
+      font-size: 17px;
       cursor: pointer;
-      box-shadow: 0 2px 8px #b0c4de33;
-      margin-left: 3px;
-    }
-    button:hover { background-color: #19793b; }
-    #taskList {
-      list-style: none;
-      padding: 0;
-    }
-    #taskList li {
-      display: flex;
-      justify-content: space-between;
-      background: #f7fafc;
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      border-radius: 5px;
-      align-items: center;
-    }
-    #taskList button {
-      background: #e57373;
-      color: #fff;
-      border-radius: 4px;
-      border: none;
-      font-size: 14px;
-      padding: 6px 10px;
-      margin-left: 8px;
       transition: background 0.2s;
     }
-    #taskList button:hover { background: #b71c1c; }
+    button:hover {
+      background: #005330;
+    }
+    ul {
+      padding: 0;
+      list-style-type: none;
+    }
+    li {
+      background: white;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      background: #b62222;
+      border: none;
+      border-radius: 3px;
+      color: white;
+      padding: 5px 13px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 15px;
+    }
+    .delete-btn:hover {
+      background: #820909;
+    }
   </style>
 </head>
 <body>
-  <div class="main-box">
-    <h2>Your Tasks</h2>
-    <form id="taskForm">
-      <input type="text" id="taskInput" placeholder="New task" required />
-      <button type="submit">Add Task</button>
-    </form>
-    <ul id="taskList"></ul>
-  </div>
-<script>
-const userEmail = localStorage.getItem('userEmail');
-if (!userEmail) {
-  alert('Not logged in! Returning to login page.');
-  window.location.href = 'login.html';
-}
+  <h2>Your Tasks</h2>
+  <form id="taskForm">
+    <input type="text" id="taskInput" placeholder="New task" required />
+    <button type="submit">Add Task</button>
+  </form>
+  <ul id="taskList"></ul>
 
-// Load tasks on page load
-fetchTasks();
+  <script>
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+      alert("Not logged in!");
+      window.location.href = "login.html";
+    }
 
-async function fetchTasks() {
-  const response = await fetch(`/tasks?user_email=${encodeURIComponent(userEmail)}`);
-  const tasks = await response.json();
-  const ul = document.getElementById('taskList');
-  ul.innerHTML = '';
-  tasks.forEach(task => {
-    const li = document.createElement('li');
-    li.textContent = task.description;
-    const delBtn = document.createElement('button');
-    delBtn.textContent = 'Delete';
-    delBtn.onclick = function() { deleteTask(task.id); };
-    li.appendChild(delBtn);
-    ul.appendChild(li);
-  });
-}
+    async function fetchTasks() {
+      try {
+        const response = await fetch(`http://your-deployed-app-url/tasks?user_email=${encodeURIComponent(userEmail)}`);
+        const tasks = await response.json();
+        if (!Array.isArray(tasks)) {
+          alert("Error: " + (tasks && tasks.message));
+          return;
+        }
+        const ul = document.getElementById('taskList');
+        ul.innerHTML = '';
+        tasks.forEach(task => {
+          const li = document.createElement('li');
+          li.textContent = task.description;
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.className = 'delete-btn';
+          delBtn.onclick = () => deleteTask(task.id);
+          li.appendChild(delBtn);
+          ul.appendChild(li);
+        });
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
 
-async function addTask(description) {
-  const response = await fetch('/tasks', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({description, user_email: userEmail})
-  });
-  if (response.ok) {
+    async function addTask(description) {
+      try {
+        const response = await fetch('http://your-deployed-app-url/tasks', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({description, user_email: userEmail})
+        });
+        if (response.ok) {
+          fetchTasks();
+          document.getElementById('taskInput').value = '';
+        } else {
+          const data = await response.json();
+          alert(data && data.message ? data.message : "Failed to add task");
+        }
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
+
+    async function deleteTask(id) {
+      try {
+        const response = await fetch(`http://your-deployed-app-url/tasks/${id}`, {method: 'DELETE'});
+        if (response.ok) {
+          fetchTasks();
+        } else {
+          alert("Failed to delete task");
+        }
+      } catch (error) {
+        alert("Network error: " + error.message);
+      }
+    }
+
+    document.getElementById('taskForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const taskInput = document.getElementById('taskInput');
+      if (taskInput.value.trim() === "") {
+        alert("Task cannot be empty.");
+        return;
+      }
+      addTask(taskInput.value.trim());
+    });
+
     fetchTasks();
-    document.getElementById('taskInput').value = '';
-  } else {
-    alert('Failed to add task');
-  }
-}
+  </script>
 
-async function deleteTask(id) {
-  const response = await fetch(`/tasks/${id}`, {method: 'DELETE'});
-  if (response.ok) fetchTasks();
-}
-
-document.getElementById('taskForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const taskInput = document.getElementById('taskInput');
-  if (taskInput.value.trim() === '') {
-    alert('Task cannot be empty.');
-    return;
-  }
-  addTask(taskInput.value);
-});
-</script>
+  <!-- Service Worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(error => console.error('Service Worker registration failed:', error));
+    }
+  </script>
 </body>
 </html>
