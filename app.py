@@ -7,83 +7,56 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Vinod$81559391@db.kefgveovbmxeoeudzmoe.supabase.co:5432/postgres'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Render PostgreSQL config (use your values, already filled below)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://n_vinod_kumar_user:HdSRCnT11SfRKXdpTZFsgTFNXRRxGCoA@dpg-d3v09qodl3ps73ff28r0-a:5432/n_vinod_kumar'
 db = SQLAlchemy(app)
 
+# User model (make sure you migrate the DB for changes)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
 
-class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(200), nullable=False)
-    user_email = db.Column(db.String(120), nullable=False)
+@app.route("/")
+def home():
+    return "Task manager backend running!"
 
-with app.app_context():
-    db.create_all()
-
+# Signup endpoint
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return jsonify({"message": "Invalid email"}), 400
-    if len(password) < 6:
-        return jsonify({"message": "Password too short"}), 400
-    if User.query.filter_by(email=email).first():
-        return jsonify({"message": "Email already exists"}), 400
-    new_user = User(username=username, email=email, password=password)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"message": "Signed up successfully"})
 
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+    user = User(username=username, email=email, password=password)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({'message': 'User registered successfully'})
+
+# Login endpoint
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
-    user = User.query.filter_by(email=email).first()
-    if not user or user.password != password:
-        return jsonify({"message": "Invalid email or password"}), 400
-    return jsonify({"message": f"Welcome {user.username}!"})
 
-@app.route('/tasks', methods=['GET'])
-def get_tasks():
-    user_email = request.args.get('user_email')
-    tasks = Task.query.filter_by(user_email=user_email).all()
-    return jsonify([{"id": task.id, "description": task.description} for task in tasks])
+    user = User.query.filter_by(email=email, password=password).first()
+    if not user:
+        return jsonify({'error': 'Invalid credentials'}), 401
+    return jsonify({'message': 'Login successful', 'username': user.username})
 
-@app.route('/tasks', methods=['POST'])
-def add_task():
-    data = request.get_json()
-    description = data.get('description')
-    user_email = data.get('user_email')
-    new_task = Task(description=description, user_email=user_email)
-    db.session.add(new_task)
-    db.session.commit()
-    return jsonify({"id": new_task.id, "description": new_task.description})
+# Serve static files (use if needed)
+@app.route('/<path:path>')
+def static_files(path):
+    return send_from_directory('static', path)
 
-@app.route('/tasks/<int:task_id>', methods=['DELETE'])
-def delete_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    db.session.delete(task)
-    db.session.commit()
-    return '', 204
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    import traceback
-    traceback.print_exc()
-    return jsonify({"message":"Internal server error"}), 500
-
-@app.route('/<path:filename>')
-def serve_static_file(filename):
-    return send_from_directory(os.getcwd(), filename)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+if __name__ == "__main__":
+    if not os.path.exists("instance"):
+        os.makedirs("instance")
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
