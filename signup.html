@@ -44,48 +44,48 @@
   <h2>Create Your Account</h2>
   <form id="signupForm">
     <label for="username">Username</label>
-    <input type="text" id="username" required />
+    <input type="text" id="username" name="username" required />
 
     <label for="email">Email</label>
-    <input type="email" id="email" required />
+    <input type="email" id="email" name="email" required />
 
     <label for="password">Password</label>
-    <input type="password" id="password" required />
+    <input type="password" id="password" name="password" required minlength="6" />
 
     <button type="submit">Sign Up</button>
   </form>
 
   <script>
-    document.getElementById('signupForm').addEventListener('submit', function(e) {
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const data = {
-        username: document.getElementById('username').value,
-        email: document.getElementById('email').value,
+        username: document.getElementById('username').value.trim(),
+        email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value
       };
 
-      fetch("/signup", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
+      try {
+        const response = await fetch('http://your-deployed-app-url/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
         if (response.ok) {
-          return response.json();
+          alert(result.message);
+          // Optionally reset or redirect after success
+          document.getElementById('signupForm').reset();
         } else {
-          return response.json().then(err => { throw err; });
+          alert(result.message || 'Signup failed');
         }
-      })
-      .then(data => {
-        alert(data.message);
-        if (data.message === "Signed up successfully") {
-          window.location.href = "login.html";
-        }
-      })
-      .catch(error => {
-        alert(error.message || 'Signup failed');
-      });
+      } catch (error) {
+        alert('Network or server error');
+      }
     });
   </script>
 </body>
