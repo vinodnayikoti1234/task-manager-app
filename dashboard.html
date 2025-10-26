@@ -82,6 +82,7 @@
   <ul id="taskList"></ul>
 
   <script>
+    const BASE_URL = "https://task-manager-app-926f.onrender.com";
     const userEmail = localStorage.getItem("userEmail");
     if (!userEmail) {
       alert("Not logged in!");
@@ -90,7 +91,7 @@
 
     async function fetchTasks() {
       try {
-        const response = await fetch(`http://your-deployed-app-url/tasks?user_email=${encodeURIComponent(userEmail)}`);
+        const response = await fetch(`${BASE_URL}/tasks?user_email=${encodeURIComponent(userEmail)}`);
         const tasks = await response.json();
         if (!Array.isArray(tasks)) {
           alert("Error: " + (tasks && tasks.message));
@@ -115,7 +116,7 @@
 
     async function addTask(description) {
       try {
-        const response = await fetch('http://your-deployed-app-url/tasks', {
+        const response = await fetch(`${BASE_URL}/tasks`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({description, user_email: userEmail})
@@ -134,7 +135,7 @@
 
     async function deleteTask(id) {
       try {
-        const response = await fetch(`http://your-deployed-app-url/tasks/${id}`, {method: 'DELETE'});
+        const response = await fetch(`${BASE_URL}/tasks/${id}`, {method: 'DELETE'});
         if (response.ok) {
           fetchTasks();
         } else {
